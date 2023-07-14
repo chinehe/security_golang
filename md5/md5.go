@@ -11,16 +11,16 @@ func ByteDigest(data []byte) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func StringDigest(s string) string {
-	sum := md5.Sum([]byte(s))
+func StringDigest(data string) string {
+	sum := md5.Sum([]byte(data))
 	return hex.EncodeToString(sum[:])
 }
 
-func ReaderDigest(reader io.Reader) (string, error) {
+func ReaderDigest(data io.Reader) (string, error) {
 	m := md5.New()
 	buf := make([]byte, 1024)
 	for {
-		l, err := reader.Read(buf)
+		l, err := data.Read(buf)
 		if err != nil {
 			if err == io.EOF {
 				break
