@@ -1,20 +1,12 @@
 package sha
 
 import (
-	"crypto/sha1"
-	"crypto/sha256"
+	"io"
 )
 
-// Sha1 Calculate the sha1 hash
-func Sha1(data []byte) []byte {
-	h := sha1.New()
-	h.Write(data)
-	return h.Sum(nil)
-}
-
-// Sha256 Calculate the sha256 hash
-func Sha256(data []byte) []byte {
-	h := sha256.New()
-	h.Write(data)
-	return h.Sum(nil)
+// DataDigester SHA数据摘要
+type DataDigester interface {
+	BytesDigest(data []byte) string              // 字节数组Sha
+	StringDigest(data string) string             // 字符串Sha
+	ReaderDigest(data io.Reader) (string, error) // 读取器Sha
 }
