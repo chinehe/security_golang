@@ -17,11 +17,6 @@ func (*digestSHA512_256) BytesDigest(data []byte) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func (*digestSHA512_256) StringDigest(data string) string {
-	sum := sha512.Sum512_256([]byte(data))
-	return hex.EncodeToString(sum[:])
-}
-
 func (*digestSHA512_256) ReaderDigest(data io.Reader) (string, error) {
 	hash := sha512.New512_256()
 	buf := make([]byte, 1024)

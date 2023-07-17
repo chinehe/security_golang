@@ -14,8 +14,3 @@ func TestReaderDigest(t *testing.T) {
 	reader := strings.NewReader("Hello World")
 	t.Log(ReaderDigest(reader))
 }
-
-func TestStringDigest(t *testing.T) {
-	data := "Hello World"
-	t.Log(StringDigest(data))
-}
