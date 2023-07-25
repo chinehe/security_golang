@@ -1,4 +1,4 @@
-package aes
+package security
 
 import (
 	"bytes"
@@ -8,6 +8,12 @@ var (
 	NoPadding    = &noPadding{}    // 不填充，只能加密128bits倍数的数据，一般不使用
 	PKCS7Padding = &pkcs7Padding{} // PKCS#7填充
 )
+
+// Padding 填充机
+type Padding interface {
+	Padding(ori []byte, blockSize int) []byte
+	UnPadding(ori []byte, blockSize int) []byte
+}
 
 // noPadding 不填充，只能加密128bits倍数的数据，一般不使用
 type noPadding struct {

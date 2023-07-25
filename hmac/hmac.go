@@ -7,17 +7,22 @@ import (
 	"io"
 )
 
-// BytesDigester 字节数组摘要
-func BytesDigester(hash func() hash.Hash, data []byte, key []byte) string {
-	hmacHash := hmac.New(hash, key)
+type Digester struct {
+	Hash func() hash.Hash // hash func
+	Key  []byte           // key
+}
+
+// BytesDigest 字节数组摘要
+func (g *Digester) BytesDigest(data []byte) string {
+	hmacHash := hmac.New(g.Hash, g.Key)
 	hmacHash.Write(data)
 	sum := hmacHash.Sum(nil)
 	return hex.EncodeToString(sum)
 }
 
-// ReaderDigester 读取器摘要
-func ReaderDigester(hash func() hash.Hash, data io.Reader, key []byte) (string, error) {
-	hmacHash := hmac.New(hash, key)
+// ReaderDigest 读取器摘要
+func (g *Digester) ReaderDigest(data io.Reader) (string, error) {
+	hmacHash := hmac.New(g.Hash, g.Key)
 	buf := make([]byte, 1024)
 	for {
 		l, err := data.Read(buf)
@@ -34,12 +39,12 @@ func ReaderDigester(hash func() hash.Hash, data io.Reader, key []byte) (string, 
 }
 
 // Verify 校验签名
-func Verify(hash func() hash.Hash, data []byte, key []byte, sign string) (bool, error) {
+func (g *Digester) Verify(data []byte, sign string) (bool, error) {
 	signBytes, err := hex.DecodeString(sign)
 	if err != nil {
 		return false, err
 	}
-	hmacHash := hmac.New(hash, key)
+	hmacHash := hmac.New(g.Hash, g.Key)
 	hmacHash.Write(data)
 	sum := hmacHash.Sum(nil)
 	return hmac.Equal(signBytes, sum), nil

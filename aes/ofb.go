@@ -3,12 +3,13 @@ package aes
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"security"
 )
 
 // OFBEncryptor 密码分组链模式AES加密机
 type OFBEncryptor struct {
-	Key     []byte  // AES密钥,长度只能为16, 24, or 32 bytes
-	Padding Padding // 填充方式
+	Key     []byte           // AES密钥,长度只能为16, 24, or 32 bytes
+	Padding security.Padding // 填充方式
 }
 
 func (e *OFBEncryptor) Encrypt(data []byte) ([]byte, error) {

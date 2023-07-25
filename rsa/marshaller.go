@@ -9,30 +9,32 @@ import (
 )
 
 var (
-	PrivateKeyMarshallerPKCS1 = &pkcs1PrivateKeyMarshaller{}
-	PrivateKeyMarshallerPKCS8 = &pkcs8PrivateKeyMarshaller{}
-	PublicKeyMarshallerPKCS1  = &pkcs1PublicKeyMarshaller{}
-	PublicKeyMarshallerPKIX   = &pkixPublicKeyMarshaller{}
+	PrivateKeyBase64MarshallerPKCS1 = &pkcs1PrivateKeyBase64Marshaller{}
+	PrivateKeyBase64MarshallerPKCS8 = &pkcs8PrivateKeyBase64Marshaller{}
+	PrivateKeyPemMarshallerPKCS1    = &pkcs1PrivateKeyPemMarshaller{}
+	PrivateKeyPemMarshallerPKCS8    = &pkcs8PrivateKeyPemMarshaller{}
+	PublicKeyBase64MarshallerPKCS1  = &pkcs1PublicKeyBase64Marshaller{}
+	PublicKeyBase64MarshallerPKIX   = &pkixPublicKeyBase64Marshaller{}
+	PublicKeyPemMarshallerPKCS1     = &pkcs1PublicKeyPemMarshaller{}
+	PublicKeyPemMarshallerPKIX      = &pkixPublicKeyPemMarshaller{}
 )
 
 // PrivateKeyMarshaller 私钥Marshaller接口
 type PrivateKeyMarshaller interface {
 	Marshal(privateKey *rsa.PrivateKey) (string, error)
 	Unmarshal(privateKey string) (*rsa.PrivateKey, error)
-	PemEncode(privateKey *rsa.PrivateKey) (string, error)
-	PemDecode(privateKey string) (*rsa.PrivateKey, error)
 }
 
-// pkcs1PrivateKeyMarshaller PKCS1格式私钥Marshaller
-type pkcs1PrivateKeyMarshaller struct {
+// pkcs1PrivateKeyBase64Marshaller PKCS1格式私钥Marshaller
+type pkcs1PrivateKeyBase64Marshaller struct {
 }
 
-func (m *pkcs1PrivateKeyMarshaller) Marshal(privateKey *rsa.PrivateKey) (string, error) {
+func (m *pkcs1PrivateKeyBase64Marshaller) Marshal(privateKey *rsa.PrivateKey) (string, error) {
 	marshalPKCS1PrivateKey := x509.MarshalPKCS1PrivateKey(privateKey)
 	return base64.StdEncoding.EncodeToString(marshalPKCS1PrivateKey), nil
 }
 
-func (m *pkcs1PrivateKeyMarshaller) Unmarshal(privateKey string) (*rsa.PrivateKey, error) {
+func (m *pkcs1PrivateKeyBase64Marshaller) Unmarshal(privateKey string) (*rsa.PrivateKey, error) {
 	bytes, err := base64.StdEncoding.DecodeString(privateKey)
 	if err != nil {
 		return nil, err
@@ -40,7 +42,10 @@ func (m *pkcs1PrivateKeyMarshaller) Unmarshal(privateKey string) (*rsa.PrivateKe
 	return x509.ParsePKCS1PrivateKey(bytes)
 }
 
-func (m *pkcs1PrivateKeyMarshaller) PemEncode(privateKey *rsa.PrivateKey) (string, error) {
+type pkcs1PrivateKeyPemMarshaller struct {
+}
+
+func (m *pkcs1PrivateKeyPemMarshaller) Marshal(privateKey *rsa.PrivateKey) (string, error) {
 	pkcs1PrivateKey := x509.MarshalPKCS1PrivateKey(privateKey)
 	block := &pem.Block{
 		Type:  "RSA PRIVATE KEY",
@@ -49,7 +54,7 @@ func (m *pkcs1PrivateKeyMarshaller) PemEncode(privateKey *rsa.PrivateKey) (strin
 	return string(pem.EncodeToMemory(block)), nil
 }
 
-func (m *pkcs1PrivateKeyMarshaller) PemDecode(privateKey string) (*rsa.PrivateKey, error) {
+func (m *pkcs1PrivateKeyPemMarshaller) Unmarshal(privateKey string) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode([]byte(privateKey))
 	if block == nil {
 		return nil, fmt.Errorf("pem decode error")
@@ -57,11 +62,11 @@ func (m *pkcs1PrivateKeyMarshaller) PemDecode(privateKey string) (*rsa.PrivateKe
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
 }
 
-// pkcs8PrivateKeyMarshaller PKCS8格式私钥Marshaller
-type pkcs8PrivateKeyMarshaller struct {
+// pkcs8PrivateKeyBase64Marshaller PKCS8格式私钥Marshaller
+type pkcs8PrivateKeyBase64Marshaller struct {
 }
 
-func (m *pkcs8PrivateKeyMarshaller) Marshal(privateKey *rsa.PrivateKey) (string, error) {
+func (m *pkcs8PrivateKeyBase64Marshaller) Marshal(privateKey *rsa.PrivateKey) (string, error) {
 	pkcs8PrivateKey, err := x509.MarshalPKCS8PrivateKey(privateKey)
 	if err != nil {
 		return "", err
@@ -69,7 +74,7 @@ func (m *pkcs8PrivateKeyMarshaller) Marshal(privateKey *rsa.PrivateKey) (string,
 	return base64.StdEncoding.EncodeToString(pkcs8PrivateKey), err
 }
 
-func (m *pkcs8PrivateKeyMarshaller) Unmarshal(privateKey string) (*rsa.PrivateKey, error) {
+func (m *pkcs8PrivateKeyBase64Marshaller) Unmarshal(privateKey string) (*rsa.PrivateKey, error) {
 	bytes, err := base64.StdEncoding.DecodeString(privateKey)
 	if err != nil {
 		return nil, err
@@ -81,7 +86,10 @@ func (m *pkcs8PrivateKeyMarshaller) Unmarshal(privateKey string) (*rsa.PrivateKe
 	return key.(*rsa.PrivateKey), nil
 }
 
-func (m *pkcs8PrivateKeyMarshaller) PemEncode(privateKey *rsa.PrivateKey) (string, error) {
+type pkcs8PrivateKeyPemMarshaller struct {
+}
+
+func (m *pkcs8PrivateKeyPemMarshaller) Marshal(privateKey *rsa.PrivateKey) (string, error) {
 	pkcs8PrivateKey, err := x509.MarshalPKCS8PrivateKey(privateKey)
 	if err != nil {
 		return "", err
@@ -93,7 +101,7 @@ func (m *pkcs8PrivateKeyMarshaller) PemEncode(privateKey *rsa.PrivateKey) (strin
 	return string(pem.EncodeToMemory(block)), nil
 }
 
-func (m *pkcs8PrivateKeyMarshaller) PemDecode(privateKey string) (*rsa.PrivateKey, error) {
+func (m *pkcs8PrivateKeyPemMarshaller) Unmarshal(privateKey string) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode([]byte(privateKey))
 	if block == nil {
 		return nil, fmt.Errorf("pem decode error")
@@ -109,20 +117,18 @@ func (m *pkcs8PrivateKeyMarshaller) PemDecode(privateKey string) (*rsa.PrivateKe
 type PublicKeyMarshaller interface {
 	Marshal(publicKey *rsa.PublicKey) (string, error)
 	Unmarshal(publicKey string) (*rsa.PublicKey, error)
-	PemEncode(publicKey *rsa.PublicKey) (string, error)
-	PemDecode(publicKey string) (*rsa.PublicKey, error)
 }
 
-// pkcs1PublicKeyMarshaller PKCS1格式公钥Marshaller
-type pkcs1PublicKeyMarshaller struct {
+// pkcs1PublicKeyBase64Marshaller PKCS1格式公钥Marshaller
+type pkcs1PublicKeyBase64Marshaller struct {
 }
 
-func (*pkcs1PublicKeyMarshaller) Marshal(publicKey *rsa.PublicKey) (string, error) {
+func (*pkcs1PublicKeyBase64Marshaller) Marshal(publicKey *rsa.PublicKey) (string, error) {
 	pkcs1PublicKey := x509.MarshalPKCS1PublicKey(publicKey)
 	return base64.StdEncoding.EncodeToString(pkcs1PublicKey), nil
 }
 
-func (m *pkcs1PublicKeyMarshaller) Unmarshal(publicKey string) (*rsa.PublicKey, error) {
+func (m *pkcs1PublicKeyBase64Marshaller) Unmarshal(publicKey string) (*rsa.PublicKey, error) {
 	bytes, err := base64.StdEncoding.DecodeString(publicKey)
 	if err != nil {
 		return nil, err
@@ -130,7 +136,10 @@ func (m *pkcs1PublicKeyMarshaller) Unmarshal(publicKey string) (*rsa.PublicKey, 
 	return x509.ParsePKCS1PublicKey(bytes)
 }
 
-func (m *pkcs1PublicKeyMarshaller) PemEncode(publicKey *rsa.PublicKey) (string, error) {
+type pkcs1PublicKeyPemMarshaller struct {
+}
+
+func (m *pkcs1PublicKeyPemMarshaller) Marshal(publicKey *rsa.PublicKey) (string, error) {
 	bytes := x509.MarshalPKCS1PublicKey(publicKey)
 	block := &pem.Block{
 		Type:  "RSA PUBLIC KEY",
@@ -139,7 +148,7 @@ func (m *pkcs1PublicKeyMarshaller) PemEncode(publicKey *rsa.PublicKey) (string, 
 	return string(pem.EncodeToMemory(block)), nil
 }
 
-func (m *pkcs1PublicKeyMarshaller) PemDecode(publicKey string) (*rsa.PublicKey, error) {
+func (m *pkcs1PublicKeyPemMarshaller) Unmarshal(publicKey string) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode([]byte(publicKey))
 	if block == nil {
 		return nil, fmt.Errorf("pem decode error")
@@ -147,11 +156,11 @@ func (m *pkcs1PublicKeyMarshaller) PemDecode(publicKey string) (*rsa.PublicKey, 
 	return x509.ParsePKCS1PublicKey(block.Bytes)
 }
 
-// pkixPublicKeyMarshaller PKIX格式公钥Marshaller
-type pkixPublicKeyMarshaller struct {
+// pkixPublicKeyBase64Marshaller PKIX格式公钥Marshaller
+type pkixPublicKeyBase64Marshaller struct {
 }
 
-func (*pkixPublicKeyMarshaller) Marshal(publicKey *rsa.PublicKey) (string, error) {
+func (*pkixPublicKeyBase64Marshaller) Marshal(publicKey *rsa.PublicKey) (string, error) {
 	pkixPublicKey, err := x509.MarshalPKIXPublicKey(publicKey)
 	if err != nil {
 		return "", err
@@ -159,7 +168,7 @@ func (*pkixPublicKeyMarshaller) Marshal(publicKey *rsa.PublicKey) (string, error
 	return base64.StdEncoding.EncodeToString(pkixPublicKey), nil
 }
 
-func (m *pkixPublicKeyMarshaller) Unmarshal(publicKey string) (*rsa.PublicKey, error) {
+func (m *pkixPublicKeyBase64Marshaller) Unmarshal(publicKey string) (*rsa.PublicKey, error) {
 	bytes, err := base64.StdEncoding.DecodeString(publicKey)
 	if err != nil {
 		return nil, err
@@ -171,7 +180,10 @@ func (m *pkixPublicKeyMarshaller) Unmarshal(publicKey string) (*rsa.PublicKey, e
 	return pkixPublicKey.(*rsa.PublicKey), nil
 }
 
-func (m *pkixPublicKeyMarshaller) PemEncode(publicKey *rsa.PublicKey) (string, error) {
+type pkixPublicKeyPemMarshaller struct {
+}
+
+func (m *pkixPublicKeyPemMarshaller) Marshal(publicKey *rsa.PublicKey) (string, error) {
 	bytes, err := x509.MarshalPKIXPublicKey(publicKey)
 	if err != nil {
 		return "", err
@@ -183,7 +195,7 @@ func (m *pkixPublicKeyMarshaller) PemEncode(publicKey *rsa.PublicKey) (string, e
 	return string(pem.EncodeToMemory(block)), nil
 }
 
-func (m *pkixPublicKeyMarshaller) PemDecode(publicKey string) (*rsa.PublicKey, error) {
+func (m *pkixPublicKeyPemMarshaller) Unmarshal(publicKey string) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode([]byte(publicKey))
 	if block == nil {
 		return nil, fmt.Errorf("pem decode error")

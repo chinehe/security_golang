@@ -1,4 +1,4 @@
-package sha
+package security
 
 import (
 	"io"

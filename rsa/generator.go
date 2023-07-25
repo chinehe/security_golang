@@ -5,9 +5,15 @@ import (
 	"crypto/rsa"
 )
 
-// GenerateKey 生成RSA公私钥
-func GenerateKey(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error) {
-	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
+type KeyGenerator struct {
+	Bits                 int                  // 长度
+	privateKeyMarshaller PrivateKeyMarshaller // 私钥序列化器
+	publicKeyMarshaller  PublicKeyMarshaller  // 公钥序列化器
+}
+
+// Generate 生成RSA公私钥
+func (g *KeyGenerator) Generate() (*rsa.PrivateKey, *rsa.PublicKey, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, g.Bits)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -15,36 +21,21 @@ func GenerateKey(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error) {
 	return privateKey, &publicKey, err
 }
 
-// GenerateMarshalledKey 生成RSA公私钥并按照指定格式进行格式化
-func GenerateMarshalledKey(bits int, privateKeyMarshaller PrivateKeyMarshaller, publicKeyMarshaller PublicKeyMarshaller) (string, string, error) {
-	privateKey, publicKey, err := GenerateKey(bits)
+// GenerateStr 生成RSA公私钥字符串
+func (g *KeyGenerator) GenerateStr() (string, string, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, g.Bits)
 	if err != nil {
 		return "", "", err
 	}
-	privateResult, err := privateKeyMarshaller.Marshal(privateKey)
+	publicKey := privateKey.PublicKey
+	// 序列化
+	privateKeyStr, err := g.privateKeyMarshaller.Marshal(privateKey)
 	if err != nil {
 		return "", "", err
 	}
-	publicResult, err := publicKeyMarshaller.Marshal(publicKey)
+	publicKeyStr, err := g.publicKeyMarshaller.Marshal(&publicKey)
 	if err != nil {
 		return "", "", err
 	}
-	return privateResult, publicResult, nil
-}
-
-// GeneratePemKey 生成RSA公私钥并按照指定格式进行格式化,然后pem格式化
-func GeneratePemKey(bits int, privateKeyMarshaller PrivateKeyMarshaller, publicKeyMarshaller PublicKeyMarshaller) (string, string, error) {
-	privateKey, publicKey, err := GenerateKey(bits)
-	if err != nil {
-		return "", "", err
-	}
-	pemPrivateKey, err := privateKeyMarshaller.PemEncode(privateKey)
-	if err != nil {
-		return "", "", err
-	}
-	pemPublicKey, err := publicKeyMarshaller.PemEncode(publicKey)
-	if err != nil {
-		return "", "", err
-	}
-	return pemPrivateKey, pemPublicKey, nil
+	return privateKeyStr, publicKeyStr, err
 }

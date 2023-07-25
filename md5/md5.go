@@ -6,12 +6,15 @@ import (
 	"io"
 )
 
-func ByteDigest(data []byte) string {
+type Digester struct {
+}
+
+func (g *Digester) BytesDigest(data []byte) string {
 	sum := md5.Sum(data)
 	return hex.EncodeToString(sum[:])
 }
 
-func ReaderDigest(data io.Reader) (string, error) {
+func (g *Digester) ReaderDigest(data io.Reader) (string, error) {
 	m := md5.New()
 	buf := make([]byte, 1024)
 	for {

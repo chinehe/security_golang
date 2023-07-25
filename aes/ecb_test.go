@@ -2,6 +2,7 @@ package aes
 
 import (
 	"encoding/base64"
+	"security"
 	"testing"
 )
 
@@ -10,7 +11,7 @@ func TestECB(t *testing.T) {
 	key := []byte("1234567890123456")
 	encryptor := ECBEncryptor{
 		Key:     key,
-		Padding: PKCS7Padding,
+		Padding: security.PKCS7Padding,
 	}
 	encrypt, err := encryptor.Encrypt(data)
 	if err != nil {

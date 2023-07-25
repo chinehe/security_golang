@@ -3,12 +3,13 @@ package aes
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"security"
 )
 
 // CFBEncryptor 密码分组链模式AES加密机
 type CFBEncryptor struct {
-	Key     []byte  // AES密钥,长度只能为16, 24, or 32 bytes
-	Padding Padding // 填充方式
+	Key     []byte           // AES密钥,长度只能为16, 24, or 32 bytes
+	Padding security.Padding // 填充方式
 }
 
 func (e *CFBEncryptor) Encrypt(data []byte) ([]byte, error) {
