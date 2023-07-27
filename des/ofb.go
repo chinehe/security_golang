@@ -8,13 +8,19 @@ import (
 
 // OFBEncryptor 密码分组链模式DES加密机
 type OFBEncryptor struct {
-	Key     []byte           // 密钥,长度只能为8 bytes
+	Key     []byte           // 密钥,长度只能8(DES)、24(3DES)
 	Padding security.Padding // 填充方式
 }
 
 func (e *OFBEncryptor) Encrypt(data []byte) ([]byte, error) {
 	// 创建密码块
-	block, err := des.NewCipher(e.Key)
+	var block cipher.Block
+	var err error
+	if len(e.Key) == KeySize3DES {
+		block, err = des.NewTripleDESCipher(e.Key)
+	} else {
+		block, err = des.NewCipher(e.Key)
+	}
 	if err != nil {
 		return nil, err
 	}
