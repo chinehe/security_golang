@@ -10,7 +10,7 @@ func TestDES(t *testing.T) {
 	//base64DESKey := GenerateBase64DESKey()
 	//t.Logf("key:%s\n", base64DESKey)
 
-	key := []byte("12345678")
+	key := []byte("123456781234567812345678")
 	data := []byte("1234567890")
 
 	bytes, err := (&CBCEncryptor{
